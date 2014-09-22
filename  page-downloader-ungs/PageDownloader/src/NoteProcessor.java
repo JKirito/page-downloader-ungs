@@ -7,10 +7,11 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class NoteProcessor implements Runnable {
 
-	private final static Logger logger = LogManager.getLogger(NoteProcessor.class);
+	private final static Logger logger = LogManager.getLogger(NoteProcessor.class.getName());
 	private Element elem;
 	private String archivo;
 	private String pathAGuardar;
@@ -25,18 +26,20 @@ public class NoteProcessor implements Runnable {
 
 	@Override
 	public void run() {
-		logger.info("COMIENZO A DESCARGAR UNA NOTA!!!");
+//		logger.info("COMIENZO A DESCARGAR UNA NOTA!!!");
 		long init = new Date().getTime();
 		long inicioDescargarUnaNota = new Date().getTime();
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(elem.attr("href")).timeout(0).get();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.exit(1);
 		}
 		long finDescargarUnaNota = new Date().getTime() - inicioDescargarUnaNota;
-
+		if(doc ==null){
+			return;
+		}
 		long inicioParsearUnaNota = new Date().getTime();
 		Note nota = getNotaFromDocument(doc);
 		long tardoEnParsearUnaNota = new Date().getTime() - inicioParsearUnaNota;
@@ -45,12 +48,12 @@ public class NoteProcessor implements Runnable {
 		guardarNota(nota);
 		long tardoEnGuardarUnaNota = new Date().getTime() - inicioGuardarUnaNota;
 
-		System.out.println("\t DescargarNota" + " : " + finDescargarUnaNota + " ms");
-		System.out.println("\t ParsearNota" + " : " + tardoEnParsearUnaNota + "ms");
-		System.out.println("\t GuardarNota" + " : " + tardoEnGuardarUnaNota + "ms");
+//		System.out.println("\t DescargarNota" + " : " + finDescargarUnaNota + " ms");
+//		System.out.println("\t ParsearNota" + " : " + tardoEnParsearUnaNota + "ms");
+//		System.out.println("\t GuardarNota" + " : " + tardoEnGuardarUnaNota + "ms");
 		long now = new Date().getTime();
 		System.out.println(" - Tardó en total aprox: " + (now - init) + "ms.");
-		logger.info("TERMINO DE DESCARGAR UNA NOTA!!!");
+//		logger.info("TERMINO DE DESCARGAR UNA NOTA!!!");
 	}
 
 	public Note getNotaFromDocument(Document doc) {
@@ -58,11 +61,18 @@ public class NoteProcessor implements Runnable {
 			logger.error("Fail to process file {}");
 			return null;
 		}
-		String titulo = doc.getElementById("encabezado").getAllElements().select("h1").text();
-		String descripcion = doc.getElementById("encabezado").getAllElements().select("p").text();
-		String cuerpo = doc.getElementById("cuerpo").getAllElements().select("p").text();
+		Element encabezado = doc.getElementById("encabezado");
+		Elements firma = encabezado.getElementsByAttributeValue("class", "firma");
+		encabezado.getElementsByClass("firma").remove();
+		Elements volanta = encabezado.getElementsByAttributeValue("class", "volanta");
+		Elements titulo = encabezado.getAllElements().select("h1");
+		Elements descripcion = encabezado.getAllElements().select("p");
+		descripcion.removeAll(volanta);
+		Element cuerpo = doc.getElementById("cuerpo");
+		Elements archRel = cuerpo.getElementsByAttributeValue("class", "archivos-relacionados");
+		Elements fin = cuerpo.getElementsByAttributeValue("class", "fin");
 
-		return new Note("", titulo, descripcion, cuerpo, "", null);
+		return new Note(volanta.text(), titulo.text(), descripcion.text(), cuerpo.text().replace(archRel.text(), "").replace(fin.text(), ""), "", null);
 	}
 
 	public void guardarNota(Note nota) {
