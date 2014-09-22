@@ -53,7 +53,7 @@ public class Note {
 		if(!this.descripcion.trim().isEmpty()){
 			nota+= this.descripcion + "\n";
 		}
-		if(!this.descripcion.trim().isEmpty()){
+		if(!this.cuerpo.trim().isEmpty()){
 			nota+= this.cuerpo + "\n";
 		}
 		if(!this.autor.trim().isEmpty()){
