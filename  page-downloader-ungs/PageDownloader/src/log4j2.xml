@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration package="log4j.test"
-status="WARN">
+<Configuration status="INFO">
 <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
         <PatternLayout pattern="%msg%n"/>
     </Console>
+    <File name="myName" fileName="vghjv.log" immediateFlush="true" append="true">
+        <PatternLayout pattern="%msg%n"/>
+    </File>
 </Appenders>
 <Loggers>
-    <Logger name="log4j.test.Log4jTest" level="trace">
+    <Logger level="info">
         <AppenderRef ref="Console"/>
+        <AppenderRef ref="File"/>
     </Logger>
     <Root level="trace">
         <AppenderRef ref="Console"/>
