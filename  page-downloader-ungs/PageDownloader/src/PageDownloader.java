@@ -92,11 +92,11 @@ public class PageDownloader {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
-		 downloadPagina12();
+//		 downloadPagina12();
 		// downloadLaNacion();
-//			prueba();
+			prueba();
 	}
 
 	public static void prueba() throws IOException{
@@ -107,9 +107,21 @@ public class PageDownloader {
 
 		for (Element E : elem) {
 			Document doc = Jsoup.connect(E.attr("href")).timeout(0).get();
-			System.out.println(doc.getElementById("encabezado").getAllElements().select("h1").text());
-			System.out.println(doc.getElementById("encabezado").getAllElements().select("p").text());
-			System.out.println(doc.getElementById("cuerpo").getAllElements().select("p").text());
+			Element encabezado = doc.getElementById("encabezado");
+			Elements volanta = encabezado.getElementsByAttributeValue("class", "volanta");
+			Elements titulo = encabezado.getAllElements().select("h1");
+			Elements descripcion = encabezado.getAllElements().select("p");
+			Elements firma = encabezado.getElementsByAttributeValue("class", "firma");
+			descripcion.removeAll(volanta);
+			descripcion.removeAll(firma);
+			Element cuerpo = doc.getElementById("cuerpo");
+			Elements archRel = cuerpo.getElementsByAttributeValue("class", "archivos-relacionados");
+
+			System.out.println("VOLANTA: " + volanta.text());
+			System.out.println("TITULO: " + titulo.text());
+			System.out.println("DESCRIPCION: " + descripcion.text());
+			System.out.println("FIRMA: " + firma.text());
+			System.out.println("CUERPO: " + cuerpo.text().replace(archRel.text(), ""));
 			System.out.println();
 		}
 	}

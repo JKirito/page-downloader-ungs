@@ -12,7 +12,7 @@ import org.jsoup.select.Elements;
 
 public class NotesRecolator {
 
-	private final static Logger logger = LogManager.getLogger(NotesRecolator.class);
+	private final static Logger logger = LogManager.getLogger(NotesRecolator.class.getName());
 
 	public static void main(String[] args) {
 		String pathAGuardar = "//home//pruebahadoop//Documentos//DescargasPeriodicos//Procesado//LaNacion//Economia//";
@@ -21,26 +21,22 @@ public class NotesRecolator {
 		File carpeta = new File("//home//pruebahadoop//Documentos//DescargasPeriodicos//Original//LaNacion//Economia//");
 		int i = 1;
 		if (carpeta.isDirectory()) {
-			ExecutorService executor = Executors.newFixedThreadPool(1);
+			ExecutorService executor = Executors.newFixedThreadPool(5);
+			logger.info("Cantidad total de archivos a procesar: "+carpeta.list().length);
+			logger.info("PUBLICACION, NOTA, TIEMPO PROCESAMIENTO(ms), TIEMPO DESCARGA(ms)");
 			// Recorrer cada archivo de la carpeta
 			for (String archivo : carpeta.list()) {
 				File file = new File(carpeta.getAbsolutePath() + "//" + archivo);
 				if (file.isFile()) {
-					logger.info("ARCHIVO PROCESADO " + archivo);
 					long init = new Date().getTime();
 					// Obtener los links asociados a las notas de cada archivo
 					try {
 						Elements elem = Jsoup.parse(file, "utf-8").getElementById("archivo-notas-272")
 								.getElementsByTag("a").select("[href]");
 
-						System.out.println("Este archivo tiene " + elem.size() + "notas/artículos.");
-
 						for (Element E : elem) {
-							long initNoteProcessor = new Date().getTime();
 							NoteProcessor np = new NoteProcessor(archivo, E, pathAGuardar);
 							executor.execute(np);
-							long finNoteProcessor = new Date().getTime();
-							System.out.println(" - Tardó en procesar una Nota: " + (initNoteProcessor - finNoteProcessor) + "ms");
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -48,16 +44,10 @@ public class NotesRecolator {
 						continue;
 					}
 					long now = new Date().getTime();
-					System.out.println(" - Tardó en total en procesar un archivo aprox: " + (now - init) / 1000 + "seg.");
-
 					i++;
 				}
 			}
 		}
-
-	}
-
-	public void guardarNotasLaNacion() {
 
 	}
 
