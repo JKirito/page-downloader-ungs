@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,22 +18,21 @@ public class NotesRecolator {
 
 		// Obtener la carpeta donde se encuentran todos los archivos
 		File carpeta = new File("//home//pruebahadoop//Documentos//DescargasPeriodicos//Original//LaNacion//Economia//");
-		int i = 1;
 		if (carpeta.isDirectory()) {
-			ExecutorService executor = Executors.newFixedThreadPool(5);
-			logger.info("Cantidad total de archivos a procesar: "+carpeta.list().length);
-			logger.info("PUBLICACION, NOTA, TIEMPO PROCESAMIENTO(ms), TIEMPO DESCARGA(ms)");
+			ExecutorService executor = Executors.newFixedThreadPool(32);
+			logger.info("PUBLICACION; NOTA; TIEMPO PROCESAMIENTO(ms); TIEMPO DESCARGA(ms); TIEMPO GUARDAR EN DISCO(ms)");
 			// Recorrer cada archivo de la carpeta
 			for (String archivo : carpeta.list()) {
 				File file = new File(carpeta.getAbsolutePath() + "//" + archivo);
 				if (file.isFile()) {
-					long init = new Date().getTime();
 					// Obtener los links asociados a las notas de cada archivo
 					try {
-						Elements elem = Jsoup.parse(file, "utf-8").getElementById("archivo-notas-272")
-								.getElementsByTag("a").select("[href]");
+						Element notasABuscar = Jsoup.parse(file, "utf-8").getElementById("archivo-notas-272");
+						if(notasABuscar == null)
+							continue;
+						Elements nota = notasABuscar.getElementsByTag("a").select("[href]");
 
-						for (Element E : elem) {
+						for (Element E : nota) {
 							NoteProcessor np = new NoteProcessor(archivo, E, pathAGuardar);
 							executor.execute(np);
 						}
@@ -43,8 +41,6 @@ public class NotesRecolator {
 						System.out.println("Se estaba procesando el archivo " + archivo);
 						continue;
 					}
-					long now = new Date().getTime();
-					i++;
 				}
 			}
 		}

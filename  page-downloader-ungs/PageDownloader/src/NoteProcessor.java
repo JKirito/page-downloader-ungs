@@ -26,18 +26,16 @@ public class NoteProcessor implements Runnable {
 
 	@Override
 	public void run() {
-//		logger.info("COMIENZO A DESCARGAR UNA NOTA!!!");
-		long init = new Date().getTime();
 		long inicioDescargarUnaNota = new Date().getTime();
 		Document doc = null;
 		try {
 			doc = Jsoup.connect(elem.attr("href")).timeout(0).get();
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
+			System.out.println("!"+e.getMessage());
+			run();
 		}
-		long finDescargarUnaNota = new Date().getTime() - inicioDescargarUnaNota;
-		if(doc ==null){
+		long tardoEnDescargarUnaNota = new Date().getTime() - inicioDescargarUnaNota;
+		if (doc == null) {
 			return;
 		}
 		long inicioParsearUnaNota = new Date().getTime();
@@ -48,12 +46,8 @@ public class NoteProcessor implements Runnable {
 		guardarNota(nota);
 		long tardoEnGuardarUnaNota = new Date().getTime() - inicioGuardarUnaNota;
 
-//		System.out.println("\t DescargarNota" + " : " + finDescargarUnaNota + " ms");
-//		System.out.println("\t ParsearNota" + " : " + tardoEnParsearUnaNota + "ms");
-//		System.out.println("\t GuardarNota" + " : " + tardoEnGuardarUnaNota + "ms");
-		long now = new Date().getTime();
-		System.out.println(" - Tardó en total aprox: " + (now - init) + "ms.");
-//		logger.info("TERMINO DE DESCARGAR UNA NOTA!!!");
+		logger.info(archivo + ";  " + nota.getTitulo() + "; " + tardoEnParsearUnaNota + "; " + tardoEnDescargarUnaNota
+				+ "; " + tardoEnGuardarUnaNota);
 	}
 
 	public Note getNotaFromDocument(Document doc) {
@@ -62,8 +56,10 @@ public class NoteProcessor implements Runnable {
 			return null;
 		}
 		Element encabezado = doc.getElementById("encabezado");
-		Elements firma = encabezado.getElementsByAttributeValue("class", "firma");
+		// Elements firma = encabezado.getElementsByAttributeValue("class",
+		// "firma");
 		encabezado.getElementsByClass("firma").remove();
+		encabezado.getElementsByClass("bajada").remove();
 		Elements volanta = encabezado.getElementsByAttributeValue("class", "volanta");
 		Elements titulo = encabezado.getAllElements().select("h1");
 		Elements descripcion = encabezado.getAllElements().select("p");
@@ -72,7 +68,8 @@ public class NoteProcessor implements Runnable {
 		Elements archRel = cuerpo.getElementsByAttributeValue("class", "archivos-relacionados");
 		Elements fin = cuerpo.getElementsByAttributeValue("class", "fin");
 
-		return new Note(volanta.text(), titulo.text(), descripcion.text(), cuerpo.text().replace(archRel.text(), "").replace(fin.text(), ""), "", null);
+		return new Note(volanta.text(), titulo.text(), descripcion.text(), cuerpo.text().replace(archRel.text(), "")
+				.replace(fin.text(), ""), "", null);
 	}
 
 	public void guardarNota(Note nota) {
