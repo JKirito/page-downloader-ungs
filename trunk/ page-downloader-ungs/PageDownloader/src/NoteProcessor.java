@@ -31,7 +31,6 @@ public class NoteProcessor implements Runnable {
 		try {
 			doc = Jsoup.connect(elem.attr("href")).timeout(0).get();
 		} catch (IOException e) {
-			System.out.println("!"+e.getMessage());
 			run();
 		}
 		long tardoEnDescargarUnaNota = new Date().getTime() - inicioDescargarUnaNota;
@@ -42,17 +41,16 @@ public class NoteProcessor implements Runnable {
 		Note nota = getNotaFromDocument(doc);
 		long tardoEnParsearUnaNota = new Date().getTime() - inicioParsearUnaNota;
 
-		long inicioGuardarUnaNota = new Date().getTime();
+//		long inicioGuardarUnaNota = new Date().getTime();
 		guardarNota(nota);
-		long tardoEnGuardarUnaNota = new Date().getTime() - inicioGuardarUnaNota;
+//		long tardoEnGuardarUnaNota = new Date().getTime() - inicioGuardarUnaNota;
 
-		logger.info(archivo + ";  " + nota.getTitulo() + "; " + tardoEnParsearUnaNota + "; " + tardoEnDescargarUnaNota
-				+ "; " + tardoEnGuardarUnaNota);
+		logger.info(archivo.substring(0, archivo.indexOf(".")) + ";  " + nota.getTitulo() + "; " + tardoEnParsearUnaNota + "; " + tardoEnDescargarUnaNota);
 	}
 
 	public Note getNotaFromDocument(Document doc) {
 		if (doc.getElementById("encabezado") == null) {
-			logger.error("Fail to process file {}");
+//			logger.error("Fail to process file {}");
 			return null;
 		}
 		Element encabezado = doc.getElementById("encabezado");
@@ -78,7 +76,7 @@ public class NoteProcessor implements Runnable {
 		try {
 			sf.store();
 		} catch (IOException e) {
-			logger.error("Error al querer guardar en disco la nota {}", nota.getTitulo());
+//			logger.error("Error al querer guardar en disco la nota {}", nota.getTitulo());
 			e.printStackTrace();
 		}
 	}
