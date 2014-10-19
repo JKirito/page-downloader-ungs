@@ -72,6 +72,8 @@ public class NoteProcessor implements Runnable {
 
 	public void guardarNota(Note nota) {
 		String nombreArchivo = archivo.replace(".html", "_" + nota.getTitulo());
+		if(nombreArchivo.contains("/"))
+			nombreArchivo = nombreArchivo.replace("/", "-");
 		StoreFile sf = new StoreFile(pathAGuardar, ".txt", nota.toString(), nombreArchivo, "iso-8859-1");
 		try {
 			sf.store();
